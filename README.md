@@ -3,10 +3,10 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100.0+-009688.svg?style=flat&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1.svg?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Gemini API](https://img.shields.io/badge/Google%20Gemini-2.5--Flash-8E7CC3.svg?style=flat&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Groq API](https://img.shields.io/badge/Groq-API-F55036.svg?style=flat)](https://console.groq.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-An enterprise-grade, **AI-powered Natural Language to SQL (NL2SQL) Agent** that safely bridges the gap between non-technical stakeholders and complex relational databases. Powered by **Google Gemini 2.5**, **FastAPI**, **SQLAlchemy**, and **SQLGlot**, the assistant dynamically inspects database schemas, translates plain English into dialect-accurate MySQL queries, enforces multi-layered read-only safety, and provides interactive execution through both a CLI and a REST API.
+An enterprise-grade, **AI-powered Natural Language to SQL (NL2SQL) Agent** that safely bridges the gap between non-technical stakeholders and complex relational databases. Powered by **Groq**, **FastAPI**, **SQLAlchemy**, and **SQLGlot**, the assistant dynamically inspects database schemas, translates plain English into dialect-accurate MySQL queries, enforces multi-layered read-only safety, and provides interactive execution through both a CLI and a REST API.
 
 ---
 
@@ -48,7 +48,7 @@ Traditional data workflows often force non-technical team members — product ma
 
 ## Key Features
 
-- **Advanced Gemini integration** — uses `google-genai` with `gemini-2.5-flash` for accurate, low-latency SQL generation.
+- **Fast Groq integration** — uses the `groq` Python SDK with `llama-3.3-70b-versatile` by default for accurate, low-latency SQL generation.
 - **Multi-layer read-only safety:**
   - **AST parsing (SQLGlot)** — rejects destructive statements (`INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, `TRUNCATE`) at the syntax-tree level.
   - **Keyword filtering** — a secondary regex check blocks unauthorized SQL verbs.
@@ -76,7 +76,7 @@ Traditional data workflows often force non-technical team members — product ma
              │
              ▼
 ┌─────────────────────────┐      ┌───────────────────────────────┐
-│  Gemini 2.5 LLM          ├────► │ Prompted with DB context       │
+│  Groq LLM                ├────► │ Prompted with DB context       │
 │  (agent.py)               │      │ Generates SQL + explanation    │
 └────────────┬─────────────┘      └───────────────────────────────┘
              │
@@ -106,7 +106,7 @@ To prevent SQL injection, database mutation, and unauthorized administrative act
 
 | Layer | Mechanism | Protection Scope |
 |---|---|---|
-| **1. Prompt constraint** | System prompt rules | Instructs Gemini to produce strictly standard ANSI/MySQL `SELECT` queries, with no comments or statement batching. |
+| **1. Prompt constraint** | System prompt rules | Instructs Groq to produce strictly standard ANSI/MySQL `SELECT` queries, with no comments or statement batching. |
 | **2. AST parser** | SQLGlot parsing | Evaluates the full query tree — any non-`SELECT` node aborts execution before the database is ever contacted. |
 | **3. Engine session** | Transaction locks | Issues `SET TRANSACTION READ ONLY;` per connection so MySQL itself rejects any modification attempt. |
 
@@ -118,7 +118,7 @@ To prevent SQL injection, database mutation, and unauthorized administrative act
 |---|---|
 | Language | Python 3.10+ |
 | API Framework | FastAPI, Uvicorn |
-| LLM Engine | Google Gemini SDK (`google-genai`), model `gemini-2.5-flash` |
+| LLM Engine | Groq Python SDK (`groq`), model `llama-3.3-70b-versatile` |
 | Database Layer | SQLAlchemy (ORM/Core), PyMySQL driver |
 | SQL Parsing & Validation | SQLGlot |
 | Configuration | python-dotenv, Pydantic |
@@ -147,7 +147,7 @@ sql_assistant/
 
 - **Python** 3.10 or higher
 - **MySQL** 8.0+, running locally or on a remote host
-- **Gemini API key** from [Google AI Studio](https://aistudio.google.com/)
+- **Groq API key** from [GroqCloud](https://console.groq.com/keys)
 
 ### 1. Clone the Repository
 
@@ -186,8 +186,10 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 
 ```env
-# Gemini API configuration
-GEMINI_API_KEY=your_actual_gemini_api_key_here
+# Groq API configuration
+GROQ_API_KEY=your_actual_groq_api_key_here
+# Optional: defaults to llama-3.3-70b-versatile
+GROQ_MODEL=llama-3.3-70b-versatile
 
 # MySQL connection parameters
 MYSQL_HOST=localhost
@@ -296,7 +298,7 @@ Ready! Ask any question about your database.
 
 💬 Enter query: Which customers have spent more than 5000 in total?
 
-⚙️ Generating SQL with Gemini...
+⚙️ Generating SQL with Groq...
 
 📝 Generated SQL:
    SELECT c.customer_id, c.name, SUM(o.amount) AS total_spent

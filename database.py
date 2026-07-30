@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 load_dotenv()
 
 USER = os.getenv("MYSQL_USER", "root")
-PASS = os.getenv("MYSQL_PASSWORD", "")
+PASS = os.getenv("MYSQL_PASSWORD", "shashi")
 HOST = os.getenv("MYSQL_HOST", "localhost")
 PORT = os.getenv("MYSQL_PORT", "3306")
 DB = os.getenv("MYSQL_DB", "test")
@@ -19,7 +19,7 @@ engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def get_schema_info() -> str:
-    """Extracts database schema (tables & columns) so Gemini knows the DB structure."""
+    """Extracts database schema (tables & columns) so Groq knows the DB structure."""
     inspector = inspect(engine)
     schema_details = []
     

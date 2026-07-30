@@ -28,7 +28,7 @@ def run_cli():
             if not user_input:
                 continue
                 
-            print("\n⚙️  Generating SQL with Gemini...")
+            print("\n⚙️  Generating SQL with Groq...")
             ai_out = generate_sql_and_explain(user_input, schema)
             sql_query = ai_out["sql"]
             explanation = ai_out["explanation"]

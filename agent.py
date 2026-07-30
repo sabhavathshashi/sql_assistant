@@ -2,12 +2,12 @@ import os
 import re
 import sqlglot
 from sqlglot import exp
-from google import genai
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 FORBIDDEN_KEYWORDS = {"INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "TRUNCATE", "CREATE", "GRANT", "REVOKE"}
 
@@ -35,7 +35,11 @@ def is_safe_sql(sql: str) -> tuple[bool, str]:
     return True, "Safe"
 
 def generate_sql_and_explain(user_prompt: str, schema_info: str) -> dict:
-    """Uses Gemini to translate natural language into MySQL query + explanation."""
+    """Uses Groq to translate natural language into MySQL query + explanation."""
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise RuntimeError("GROQ_API_KEY is not configured. Add it to your .env file.")
+
     prompt = f"""
 You are an expert MySQL database administrator.
 Database Schema:
@@ -54,12 +58,21 @@ OUTPUT FORMAT (STRICT):
 <Your concise explanation here>
 """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
+    client = Groq(api_key=api_key)
+    response = client.chat.completions.create(
+        model=GROQ_MODEL,
+        messages=[
+            {
+                "role": "system",
+                "content": "You generate safe, read-only MySQL queries and concise explanations.",
+            },
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0,
+        max_completion_tokens=1024,
     )
-    
-    text_response = response.text or ""
+
+    text_response = response.choices[0].message.content or ""
     
     # Extract SQL and Explanation
     sql_match = re.search(r"===SQL===\s*(.*?)\s*===EXPLANATION===", text_response, re.DOTALL)
