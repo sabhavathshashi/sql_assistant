@@ -143,7 +143,7 @@ sql_assistant/
 
 ## Getting Started
 
-### Prerequisites
+### Prerequisites required for this run this application
 
 - **Python** 3.10 or higher
 - **MySQL** 8.0+, running locally or on a remote host
